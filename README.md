@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 > [!CAUTION]
 > The only official places to download Chevstrap is this GitHub repository. Any other websites offering downloads or claiming to be us are not controlled by us.
 
@@ -24,3 +25,6 @@ A: No, it shouldn't. Chevstrap doesn't interact with the Roblox client
 #### Q: Can you add Discord Rich Presence
 
 A: It was planned from the beginning, but was canceled for safety reasons.
+=======
+# Chevstrap
+>>>>>>> a535da5a81e8cb69e69c6b13ba1305444f1255cf
