@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ConfigureSettings">Atur Pengaturan</string>
+    <string name="LaunchRoblox">Buka Roblox</string>
+    <string name="FastFlagsCatcher">Tangkap Fast Flags</string>
+    <string name="MessageOpenRbx">Mungkin tidak bisa membuka Roblox lewat ini</string>
+    <string name="SaveText">Simpan</string>
+    <string name="LoadText">Muat</string>
+    <string name="CatchIt">Tangkap</string>
+    <string name="IsExisted2">Apakah Ada: Salah</string>
+    <string name="IsExisted3">Apakah Ada: Benar</string>
+    <string name="Open123">Buka Folder Mod</string>
+    <string name="FastFlagsEditorTXT">Editor Fast Flags</string>
+    <string name="Message1">Pesan</string>
+    <string name="NameFastFlag">Kasih Nama Satu Fast Flag</string>
+    <string name="Exit12">Keluar</string>
+    <string name="NoWifi">Tidak ada koneksi atau koneksi tidak stabil</string>
+    <string name="SayHi">halo disana, apa yang akan saya tulis di sini?</string>
+</resources>

@@ -1,0 +1,77 @@
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+	<ScrollView
+		android:id="@+id/vscroll1"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:padding="8dp"
+		android:background="#030303">
+		<LinearLayout
+			android:id="@+id/linear5"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:padding="8dp"
+			android:orientation="vertical">
+			<LinearLayout
+				android:id="@+id/linear7"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:padding="8dp"
+				android:orientation="vertical">
+				<TextView
+					android:id="@+id/textview2"
+					android:layout_width="match_parent"
+					android:layout_height="80dp"
+					android:padding="25dp"
+					android:gravity="center_horizontal|center_vertical"
+					android:text="Chevstrap"
+					android:textSize="20sp"
+					android:textStyle="bold"
+					android:textColor="#FFFFFF"
+					android:layout_gravity="center_horizontal|center_vertical" />
+				<TextView
+					android:id="@+id/sayhi1"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:padding="8dp"
+					android:gravity="center_horizontal|top"
+					android:text="kinda broken"
+					android:textSize="11sp"
+					android:textColor="#FFFFFF"
+					android:layout_gravity="center_horizontal|top" />
+			</LinearLayout>
+			<Button
+				android:id="@+id/button1"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_margin="5dp"
+				android:background="#090909"
+				android:text="Launch Roblox"
+				android:textSize="14sp"
+				android:textColor="#FFFFFF" />
+			<Button
+				android:id="@+id/button2"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_margin="5dp"
+				android:background="#090909"
+				android:text="Configure Settings"
+				android:textSize="14sp"
+				android:textColor="#FFFFFF" />
+			<Button
+				android:id="@+id/button3"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_margin="5dp"
+				android:background="#090909"
+				android:text="About"
+				android:textSize="14sp"
+				android:textColor="#FFFFFF" />
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>

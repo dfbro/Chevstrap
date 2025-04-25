@@ -1,0 +1,98 @@
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+
+	<LinearLayout
+		android:id="@+id/linear6"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:padding="8dp"
+		android:background="#030303"
+		android:orientation="vertical">
+
+		<TextView
+			android:id="@+id/textview4"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:padding="8dp"
+			android:text="Fast Flags Editor"
+			android:textSize="18sp"
+			android:textStyle="bold"
+			android:textColor="#FFFFFF" />
+
+		<LinearLayout
+			android:id="@+id/linear8"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="5dp"
+			android:layout_marginRight="5dp"
+			android:padding="5dp"
+			android:orientation="horizontal">
+
+			<Button
+				android:id="@+id/button3"
+				android:layout_width="0dp"
+				android:layout_height="45dp"
+				android:layout_margin="5dp"
+				android:layout_weight="1"
+				android:background="#000000"
+				android:text="Save"
+				android:textSize="14sp"
+				android:textStyle="bold"
+				android:textColor="#FFFFFF" />
+
+			<Button
+				android:id="@+id/button5"
+				android:layout_width="0dp"
+				android:layout_height="45dp"
+				android:layout_margin="5dp"
+				android:layout_weight="1"
+				android:background="#000000"
+				android:text="Load"
+				android:textSize="14sp"
+				android:textStyle="bold"
+				android:textColor="#FFFFFF" />
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/linear9"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			android:padding="8dp"
+			android:orientation="vertical">
+
+			<ScrollView
+				android:id="@+id/vscroll1"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:padding="8dp">
+
+				<LinearLayout
+					android:id="@+id/linear10"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:padding="2dp"
+					android:orientation="horizontal">
+
+					<EditText
+						android:id="@+id/edittext2"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:padding="2dp"
+						android:background="@android:color/transparent"
+						android:text="{\n}"
+						android:textSize="12sp"
+						android:textColor="#FFFFFF"
+						android:hint="Type Here"
+						android:inputType="textMultiLine"
+						android:textColorHint="#607D8B" />
+				</LinearLayout>
+			</ScrollView>
+		</LinearLayout>
+	</LinearLayout>
+</LinearLayout>

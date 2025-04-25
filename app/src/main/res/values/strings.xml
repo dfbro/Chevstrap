@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chevstrap</string>
+    <string name="ConfigureSettings">Configure Settings</string>
+    <string name="LaunchRoblox">Launch Roblox</string>
+    <string name="FastFlagsCatcher">Fast Flags Catcher</string>
+    <string name="MessageOpenRbx">You may not be able to open Roblox through this</string>
+    <string name="SaveText">Save</string>
+    <string name="LearnMoreText">Learn More</string>
+    <string name="LoadText">Load</string>
+    <string name="CatchIt">Catch</string>
+    <string name="IsExisted2">Is Exist: False</string>
+    <string name="IsExisted3">Is Exist: True</string>
+    <string name="Open123">Open Mods Folder</string>
+    <string name="FastFlagsEditorTXT">Fast Flags Editor</string>
+    <string name="Warning1">Warning</string>
+    <string name="Message1">Message</string>
+    <string name="NameFastFlag">Name a Fast Flag</string>
+    <string name="Exit12">Exit</string>
+    <string name="NoWifi">No connection or unstable connection</string>
+    <string name="SayHi">Hello there, what am I going to write here?</string>
+    <string name="AnotherHi1">Nice day, isn\'t it? Oh, hello!</string>
+    <string name="AnotherHi2">I thought you didn\'t use this app anymore, hello!</string>
+    <string name="NoRoot1">Your device does not have root access</string>
+    <string name="NoRoot2">Run this app in a trusted cloning app, and make sure your roblox has been added to a trusted cloning app</string>
+    <string name="StorageFullMessage">Please ensure you have enough storage available for this app to run properly</string>
+    <string name="Aboutt">About</string>
+    <string name="TypeHere">Type Here</string>
+    <string name="Contributors">Contributors</string>
+    <string name="FFlagschanged">FFlags have been successfully changed</string>
+    <string name="JustAMessageFastFlagNotLoaded">If the fast flags fail to load after launching Roblox, try restarting your device, then launch Roblox again</string>
+    <string name="Cancel">Cancel</string>
+    <string name="Update">Update</string>
+    <string name="PleaseUpdate">This app is outdated, Please update this app to the latest one</string>
+</resources>
