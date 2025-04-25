@@ -2,8 +2,7 @@
 > The only official places to download Chevstrap is this GitHub repository. Any other websites offering downloads or claiming to be us are not controlled by us.
 
 # Chevstrap
-Chevstrap is a Roblox launcher for Android, inspired by [Bloxstrap](https://github.com/bloxstraplabs/bloxstrap). It provides advanced customization and more to enhance your Roblox experience on mobile.
-
+Chevstrap is a Roblox launcher for Android, inspired by [Bloxstrap](https://github.com/bloxstraplabs/bloxstrap).
 ## Features
 
 - Adjust specific FFlags for testing
