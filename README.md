@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> cef61208659841410eb7de6854c8823055284cdb
 > [!CAUTION]
 > The only official places to download Chevstrap is this GitHub repository. Any other websites offering downloads or claiming to be us are not controlled by us.
 
@@ -18,10 +14,9 @@ Chevstrap is a Roblox launcher for Android, inspired by [Bloxstrap](https://gith
 
 1. Download the [latest release of Chevstrap](https://github.com/FrosSky/Chevstrap/releases).
 2. Install the APK on your Android device.
-<<<<<<< HEAD
 3. Once installed, open Chevstrap and begin using it.
+
 =======
->>>>>>> cef61208659841410eb7de6854c8823055284cdb
 
 ## F.A.Q
 
@@ -31,11 +26,4 @@ A: No, it shouldn't. Chevstrap doesn't interact with the Roblox client
 
 #### Q: Can you add Discord Rich Presence
 
-<<<<<<< HEAD
 A: It was planned from the beginning, but was canceled for safety reasons.
-=======
-A: It was planned from the beginning, but was canceled for safety reasons.
-=======
-# Chevstrap
->>>>>>> a535da5a81e8cb69e69c6b13ba1305444f1255cf
->>>>>>> cef61208659841410eb7de6854c8823055284cdb
