@@ -19,6 +19,9 @@ Chevstrap is a Roblox launcher for Android, inspired by [Bloxstrap](https://gith
 
 A: No, it shouldn't. Chevstrap doesn't interact with the Roblox client
 
-#### Q: Can you add Discord Rich Presence
+#### Q: Can you add Discord Rich Presence?
 
-A: It was planned from the beginning, but was canceled for safety reasons.
+A: It was planned from the beginning, but was canceled for safety reasons
+
+#### Q: Where to join discocrd server?
+A: Here's [Discord Server](https://discord.gg/rWkJ6Uh46U), but it may expired
