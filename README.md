@@ -23,5 +23,5 @@ A: No, it shouldn't. Chevstrap doesn't interact with the Roblox client
 
 A: It was planned from the beginning, but was canceled for safety reasons
 
-#### Q: Where to join discocrd server?
+#### Q: Where to join discord server?
 A: Here's [Discord Server](https://discord.gg/rWkJ6Uh46U), but it may expired
