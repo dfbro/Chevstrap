@@ -1,3 +1,10 @@
+<div align="center">
+
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FrosSky/Chevstrap/total)
+![GitHub License](https://img.shields.io/github/license/FrosSky/Chevstrap)
+
+</div>
+
 > [!CAUTION]
 > The only official places to download Chevstrap is this GitHub repository. Any other websites offering downloads or claiming to be us are not controlled by us.
 
