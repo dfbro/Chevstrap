@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Chevstrap</string>
-    <string name="ConfigureSettings">Configure Settings</string>
-    <string name="LaunchRoblox">Launch Roblox</string>
     <string name="FastFlagsCatcher">Fast Flags Catcher</string>
     <string name="MessageOpenRbx">You may not be able to open Roblox through this</string>
     <string name="SaveText">Save</string>
@@ -32,4 +30,8 @@
     <string name="Cancel">Cancel</string>
     <string name="Update">Update</string>
     <string name="PleaseUpdate">This app is outdated, Please update this app to the latest one</string>
+    <string name="configure_settings">Configure Settings</string>
+    <string name="launch_roblox">Launch Roblox</string>
+    <string name="launch_robloxvn">Launch Roblox VN</string>
+    <string name="about">About</string>
 </resources>
