@@ -52,6 +52,8 @@ import org.json.*;
 public class MainActivity extends Activity {
 
 	private String rbxpath = "";
+
+	private String AppPackageTOlaunch = "";
 	private String data_data = "";
 	private String lastClientAppSettings = "";
 	private boolean isRoot = false;
@@ -64,6 +66,7 @@ public class MainActivity extends Activity {
 	private Button button3;
 	private TextView textview2;
 	private TextView sayhi1;
+	private Button button1_2;
 
 	private Intent startIntent = new Intent();
 	private Intent teleport = new Intent();
@@ -104,6 +107,7 @@ public class MainActivity extends Activity {
 		linear5 = findViewById(R.id.linear5);
 		linear7 = findViewById(R.id.linear7);
 		button1 = findViewById(R.id.button1);
+		button1_2 = findViewById(R.id.button1_2);
 		button2 = findViewById(R.id.button2);
 		button3 = findViewById(R.id.button3);
 		textview2 = findViewById(R.id.textview2);
@@ -126,9 +130,36 @@ public class MainActivity extends Activity {
 		button1.setOnClickListener(_view -> {
 			maynotopen.setTitle(getString(R.string.Message1));
 			maynotopen.setMessage(getString(R.string.JustAMessageFastFlagNotLoaded));
-			maynotopen.setPositiveButton(getString(R.string.LaunchRoblox), (_dialog, _which) -> {
+			maynotopen.setPositiveButton(getString(R.string.launch_roblox), (_dialog, _which) -> {
 				_getDataStorage();
+				AppPackageTOlaunch = "com.roblox.client";
 				rbxpath = data_data.replace(getPackageName(), "com.roblox.client");
+
+				// Perform file operations in the background thread
+				new Thread(() -> {
+					if (!FileUtil.isExistFile(rbxpath)) {
+						FileUtil.makeDir(rbxpath);
+					}
+
+					isRoot = fileStuff.isDirectoryAccessible(rbxpath);
+					if (!isRoot) {
+						runOnUiThread(() -> RootAccessDialog.show(MainActivity.this));
+					} else {
+						runOnUiThread(() -> showLoadingDialog());
+					}
+				}).start();
+			});
+			maynotopen.setNegativeButton(getString(R.string.Cancel), null);
+			maynotopen.create().show();
+		});
+
+		button1_2.setOnClickListener(_view -> {
+			maynotopen.setTitle(getString(R.string.Message1));
+			maynotopen.setMessage(getString(R.string.JustAMessageFastFlagNotLoaded));
+			maynotopen.setPositiveButton(getString(R.string.launch_robloxvn), (_dialog, _which) -> {
+				_getDataStorage();
+				AppPackageTOlaunch = "com.roblox.client.vnggames";
+				rbxpath = data_data.replace(getPackageName(), "com.roblox.client.vnggames");
 
 				// Perform file operations in the background thread
 				new Thread(() -> {
@@ -224,10 +255,13 @@ public class MainActivity extends Activity {
 						try {
 							Thread.sleep(5000);  // Wait for Roblox to start
 							runOnUiThread(() -> {
-								Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.roblox.client");
+								Intent launchIntent = getPackageManager().getLaunchIntentForPackage(AppPackageTOlaunch);
 								if (launchIntent != null) {
 									loadingDialog.dismiss();
 									startActivity(launchIntent);
+									ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+									am.killBackgroundProcesses(getApplicationContext().getPackageName());
+
 								} else {
 									textViewLoadingStatus.setText("Failed to launch Roblox");
 								}
@@ -267,8 +301,6 @@ public class MainActivity extends Activity {
 			setColor(0xFF090909);
 		}});
 
-		button1.setText(getString(R.string.LaunchRoblox));
-		button2.setText(getString(R.string.ConfigureSettings));
 		button3.setText(getString(R.string.Aboutt));
 		sayhi1.setText(getString(R.string.SayHi));
 
