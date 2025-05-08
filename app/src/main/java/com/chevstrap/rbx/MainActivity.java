@@ -74,7 +74,7 @@ public class MainActivity extends Activity {
 	private AlertDialog.Builder updateTime;
 
 	private Handler handler = new Handler();
-	private Runnable spinnerRunnable;
+
 	private boolean isLoading = false;
 
 	@Override
@@ -206,29 +206,13 @@ public class MainActivity extends Activity {
 			setColor(Color.TRANSPARENT);
 		}});
 
-		Handler handler = new Handler(Looper.getMainLooper());
-		Runnable spinnerTask = new Runnable() {
-			@Override
-			public void run() {
-				if (isLoading) {
-					// Rotate spinner
-					float currentRotation = imageViewLoadingSpin.getRotation();
-					imageViewLoadingSpin.setRotation(currentRotation + 5);
-
-					// Post task again after a delay
-					handler.postDelayed(this, 20);
-				}
-			}
-
-		};
-		handler.postDelayed(spinnerTask, 0);
 
 		textViewLoadingStatus.setText(" ... ");
 		loadingDialog.show();
 
 		cancelButton.setOnClickListener(_v -> {
 			isLoading = false;
-			handler.removeCallbacks(spinnerRunnable);
+
 			loadingDialog.dismiss();
 		});
 
@@ -259,9 +243,6 @@ public class MainActivity extends Activity {
 								if (launchIntent != null) {
 									loadingDialog.dismiss();
 									startActivity(launchIntent);
-									ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-									am.killBackgroundProcesses(getApplicationContext().getPackageName());
-
 								} else {
 									textViewLoadingStatus.setText("Failed to launch Roblox");
 								}
@@ -320,28 +301,51 @@ public class MainActivity extends Activity {
 			StorageFullDialog.show(this);
 		} else {
 			new Thread(() -> {
-				String latestVersion = new aboutApp(MainActivity.this).getLatestVersion();
-				String currentVersion = new aboutApp(MainActivity.this).getAppVersion().toString();
+				try {
+					aboutApp appInfo = new aboutApp(MainActivity.this);
 
-				runOnUiThread(() -> {
-					if (!latestVersion.equals(currentVersion) && !latestVersion.equals("no")) {
-						updateTime.setTitle(getString(R.string.Message1));
-						updateTime.setMessage(getString(R.string.PleaseUpdate));
-						updateTime.setPositiveButton(getString(R.string.Update), (_dialog, _which) -> {
-							Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/FrosSky/Chevstrap/releases/latest"));
-							startActivity(browserIntent);
-						});
-						updateTime.setNegativeButton(getString(R.string.Cancel), null);
-						updateTime.setCancelable(false);
-						updateTime.create().show();
-					}
-				});
+					String latestVersion = appInfo.getLatestVersion();
+					String currentVersion = appInfo.getAppVersion();
+
+					runOnUiThread(() -> {
+						try {
+							// Avoid crashes on closed or backgrounded activity
+							if (isFinishing() || isDestroyed()) return;
+
+							if (!latestVersion.equals(currentVersion) && !latestVersion.equals("no")) {
+								AlertDialog.Builder updateTime = new AlertDialog.Builder(MainActivity.this);
+								updateTime.setTitle(getString(R.string.Message1));
+								updateTime.setMessage(getString(R.string.PleaseUpdate));
+								updateTime.setPositiveButton(getString(R.string.Update), (_dialog, _which) -> {
+									try {
+										Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+												Uri.parse("https://github.com/FrosSky/Chevstrap/releases/latest"));
+										startActivity(browserIntent);
+									} catch (Exception e) {
+										Log.e("UpdateIntent", "Failed to open browser", e);
+										Toast.makeText(MainActivity.this, "Failed to open browser", Toast.LENGTH_SHORT).show();
+									}
+								});
+								updateTime.setNegativeButton(getString(R.string.Cancel), null);
+								updateTime.setCancelable(false);
+								updateTime.create().show();
+							}
+						} catch (Exception e) {
+							Log.e("UpdateDialog", "Error showing update dialog", e);
+							Toast.makeText(this, "Failed to show update dialog", Toast.LENGTH_SHORT).show();
+						}
+					});
+
+				} catch (Exception e) {
+					Log.e("VersionCheck", "Error during version check", e);
+					Toast.makeText(this, "Version check failed", Toast.LENGTH_SHORT).show();
+				}
 			}).start();
 		}
+
 	}
 
 	public void _getDataStorage() {
 		data_data = getFilesDir().getAbsolutePath() + "/";
 	}
 }
-
