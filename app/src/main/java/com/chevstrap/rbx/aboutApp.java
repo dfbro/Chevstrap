@@ -35,9 +35,12 @@ public class aboutApp {
             URL url = new URL("https://api.github.com/repos/frossky/chevstrap/releases/latest");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", "Chevstrap-App"); // required
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(3000);
 
             int responseCode = connection.getResponseCode();
-            if (responseCode != 200) {
+            if (responseCode != HttpURLConnection.HTTP_OK) {
                 return "no";
             }
 
@@ -59,9 +62,7 @@ public class aboutApp {
             return json.getString("tag_name").replaceFirst("^v", "");
 
         } catch (Exception e) {
-            //e.printStackTrace(); // Helpful for debugging
             return "no";
-            //return "Error: " + e.getClass().getSimpleName() + " - " + e.getMessage();
         }
     }
 
