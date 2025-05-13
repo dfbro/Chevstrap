@@ -13,6 +13,8 @@ Chevstrap is a Roblox & Roblox VN launcher for Android, inspired by [Bloxstrap](
 ## Features
 
 - Adjust specific FFlags for testing
+- See where your server is currently located
+- Able to rejoin your last server after leaving it
 
 ## Installation
 
