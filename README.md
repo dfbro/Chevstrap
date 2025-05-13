@@ -1,5 +1,8 @@
 <div align="center">
 
+![image](https://github.com/user-attachments/assets/05cb35f1-50e5-4b4f-9a06-6dbe3713b8d5)
+
+
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FrosSky/Chevstrap/total)
 ![GitHub License](https://img.shields.io/github/license/FrosSky/Chevstrap)
 
