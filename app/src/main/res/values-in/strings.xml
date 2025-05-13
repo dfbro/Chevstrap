@@ -1,19 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ConfigureSettings">Atur Pengaturan</string>
-    <string name="LaunchRoblox">Buka Roblox</string>
-    <string name="FastFlagsCatcher">Tangkap Fast Flags</string>
-    <string name="MessageOpenRbx">Mungkin tidak bisa membuka Roblox lewat ini</string>
+    <string name="app_name">Chevstrap</string>
+    <string name="FastFlagsCatcher">Penangkap Fast Flags</string>
+    <string name="MessageOpenRbx">Anda mungkin tidak bisa membuka Roblox melalui ini</string>
     <string name="SaveText">Simpan</string>
+    <string name="LearnMoreText">Pelajari Lebih Lanjut</string>
     <string name="LoadText">Muat</string>
     <string name="CatchIt">Tangkap</string>
     <string name="IsExisted2">Apakah Ada: Salah</string>
     <string name="IsExisted3">Apakah Ada: Benar</string>
-    <string name="Open123">Buka Folder Mod</string>
+    <string name="Open123">Buka Folder Mods</string>
     <string name="FastFlagsEditorTXT">Editor Fast Flags</string>
+    <string name="Warning1">Peringatan</string>
     <string name="Message1">Pesan</string>
-    <string name="NameFastFlag">Kasih Nama Satu Fast Flag</string>
+    <string name="NameFastFlag">Beri Nama Fast Flag</string>
     <string name="Exit12">Keluar</string>
     <string name="NoWifi">Tidak ada koneksi atau koneksi tidak stabil</string>
-    <string name="SayHi">halo disana, apa yang akan saya tulis di sini?</string>
+    <string name="SayHi">Halo, aku harus nulis apa di sini ya?</string>
+    <string name="AnotherHi1">Hari yang cerah, bukan? Oh, halo!</string>
+    <string name="AnotherHi2">Kupikir kamu sudah nggak pakai aplikasi ini lagi, halo!</string>
+    <string name="NoRoot1">Perangkat Anda tidak memiliki akses root</string>
+    <string name="NoRoot2">Jalankan aplikasi ini di aplikasi cloning terpercaya, dan pastikan Roblox Anda sudah ditambahkan ke dalam aplikasi cloning terpercaya</string>
+    <string name="StorageFullMessage">Pastikan Anda memiliki cukup ruang penyimpanan agar aplikasi ini bisa berjalan dengan baik</string>
+    <string name="Aboutt">Tentang</string>
+    <string name="TypeHere">Ketik di Sini</string>
+    <string name="Contributors">Kontributor</string>
+    <string name="FFlagschanged">FFlags berhasil diubah</string>
+    <string name="JustAMessageFastFlagNotLoaded">Jika fast flags gagal dimuat setelah membuka Roblox, coba mulai ulang perangkat Anda, lalu buka Roblox lagi</string>
+    <string name="Cancel">Batal</string>
+    <string name="Update">Perbarui</string>
+    <string name="PleaseUpdate">Aplikasi ini sudah usang, Silakan perbarui aplikasi ini ke versi terbaru</string>
+    <string name="configure_settings">Konfigurasi Pengaturan</string>
+    <string name="launch_roblox">Luncurkan Roblox</string>
+    <string name="about">Tentang</string>
+    <string name="copy_server_link">Copy Server Link</string>
+    <string name="rejoin">Rejoin</string>
+    <string name="game_name">Game Name</string>
 </resources>
