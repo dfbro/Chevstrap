@@ -34,4 +34,8 @@
     <string name="launch_roblox">Launch Roblox</string>
     <string name="launch_robloxvn">Launch Roblox VN</string>
     <string name="about">About</string>
+    <string name="todo">TODO</string>
+    <string name="copy_server_link">Copy Server Link</string>
+    <string name="rejoin">Rejoin</string>
+    <string name="game_name">Game Name</string>
 </resources>
