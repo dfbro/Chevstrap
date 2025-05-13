@@ -10,15 +10,17 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:padding="8dp"
-		android:background="#030303">
+		android:background="#030303"
+        tools:ignore="UselessParent">
 
 		<LinearLayout
 			android:id="@+id/linear5"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:gravity="center_horizontal|center_vertical"
+			android:gravity="center_horizontal"
 			android:orientation="vertical"
-			android:padding="8dp">
+			android:padding="8dp"
+			android:layout_gravity="center">
 
 			<LinearLayout
 				android:id="@+id/linear7"
@@ -83,7 +85,6 @@
 						android:text="@string/launch_robloxvn"
 						android:textColor="#FFFFFF"
 						android:textSize="14sp" />
-
 					<Button
 						android:id="@+id/button2"
 						android:layout_width="match_parent"
