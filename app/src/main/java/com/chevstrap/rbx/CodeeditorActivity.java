@@ -20,9 +20,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedWriter;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
 
@@ -109,6 +112,7 @@ public class CodeeditorActivity extends Activity {
 		jsoooon.setType("application/json");
 		jsoooon.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
+
 		button3.setOnClickListener(_view -> {
             try {
                 String formattedJson = JsonFormatter.formatJson(edittext2.getText().toString());
@@ -122,7 +126,7 @@ public class CodeeditorActivity extends Activity {
 
             }
 
-            File clientSettingsDir = new File(getExternalFilesDir(null), "Modifications/ClientSettings");
+            File clientSettingsDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Modifications/ClientSettings");
 
             if (!clientSettingsDir.exists()) {
                 boolean dirCreated = clientSettingsDir.mkdirs();
@@ -133,12 +137,15 @@ public class CodeeditorActivity extends Activity {
 
             File outFile = new File(clientSettingsDir, "ClientAppSettings.json");
 
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)))) {
-                writer.write(edittext2.getText().toString());
-                showMessage("FFlags have been successfully changed");
-            } catch (IOException e) {
-                showMessage("Error writing to file: " + e.getMessage());
-            }
+			fileStuff.writeFile(String.valueOf(clientSettingsDir), edittext2.getText().toString());
+
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(outFile)))) {
+				// If reading was successful
+				showMessage("FFlags have been successfully changed");
+			} catch (IOException e) {
+				// If there's an error reading the file
+				showMessage("Error writing from file");
+			}
         });
 
 		button5.setOnClickListener(_view -> startActivityForResult(jsoooon, REQ_CD_JSOOOON));
@@ -177,7 +184,7 @@ public class CodeeditorActivity extends Activity {
 		button5.setText(getString(R.string.LoadText));
 		edittext2.setHint(getString(R.string.TypeHere));
 
-		File configFile = new File(Environment.getExternalStorageDirectory(), "Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
+		File configFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
 		if (configFile.exists()) {
 			edittext2.setText(FileUtil.readFile(configFile.getAbsolutePath()));
 		}
@@ -185,7 +192,7 @@ public class CodeeditorActivity extends Activity {
 		try {
 			getPackageManager().getPackageInfo("com.roblox.client", 0);
 		} catch (PackageManager.NameNotFoundException e) {
-            //boolean isRobloxNotInstalled = true;
+			//boolean isRobloxNotInstalled = true;
 		}
 	}
 
@@ -214,25 +221,6 @@ public class CodeeditorActivity extends Activity {
 	private void showMessage(String _s) {
 		Toast.makeText(getApplicationContext(), _s, Toast.LENGTH_SHORT).show();
 	}
-
-	private void saveJsonToFile() {
-		File clientSettingsDir = new File(getExternalFilesDir(null), "Chevstrap/Modifications/ClientSettings");
-
-		if (!clientSettingsDir.exists() && !clientSettingsDir.mkdirs()) {
-			showMessage("Failed to create settings directory");
-			return;
-		}
-
-		File outFile = new File(clientSettingsDir, "ClientAppSettings.json");
-
-		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8))) {
-			writer.write(edittext2.getText().toString());
-			showMessage("FFlags have been successfully changed");
-		} catch (IOException e) {
-			showMessage("Error writing to file: " + e.getMessage());
-		}
-	}
-
 
 	@Override
 	protected void onDestroy() {
