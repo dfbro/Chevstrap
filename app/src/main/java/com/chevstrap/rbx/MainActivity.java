@@ -15,6 +15,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.*;
 import android.net.Uri;
 import android.os.*;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import android.widget.Button;
@@ -115,33 +116,6 @@ public class MainActivity extends Activity {
 			initializeLogic();
 		}
 	}
-	public File getLLLLFile() {
-		return LLLLFile;
-	}
-
-	public void setLLLLFile(File LLLLFile) {
-		this.LLLLFile = LLLLFile;
-	}
-
-	public void copyLLLL() {
-		File targetDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Chevstrap/Logs");
-		File latestLog = new File(String.valueOf(getLLLLFile()));
-
-		if (!targetDir.exists()) {
-			boolean dirCreated = targetDir.mkdirs();
-			if (!dirCreated) {
-				return;
-			}
-		}
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			try {
-				File destinationFile = new File(targetDir, "lastRBX.txt");
-				Files.copy(latestLog.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException ignored) {
-			}
-		}
-	}
 
 	@Override
 	protected void onDestroy() {
@@ -163,6 +137,7 @@ public class MainActivity extends Activity {
 			initializeLogic();
 		}
 	}
+
 	public boolean rbxIsLibFolderExisted() {
 		try {
 			PackageManager pm = getPackageManager();
@@ -248,9 +223,34 @@ public class MainActivity extends Activity {
 			startActivity(teleport);
 		});
 	}
+	
+	public File getLLLLFile() {
+		return LLLLFile;
+	}
 
+	public void setLLLLFile(File LLLLFile) {
+		this.LLLLFile = LLLLFile;
+	}
 
+	public void copyLLLL() {
+		File targetDir = new File(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "Chevstrap/Logs");
+		File latestLog = new File(String.valueOf(getLLLLFile()));
 
+		if (!targetDir.exists()) {
+			boolean dirCreated = targetDir.mkdirs();
+			if (!dirCreated) {
+				return;
+			}
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			try {
+				File destinationFile = new File(targetDir, "lastRBX.txt");
+				Files.copy(latestLog.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException ignored) {
+			}
+		}
+	}
 
 	@SuppressLint("SetTextI18n")
     private void showLoadingDialog() {
@@ -282,13 +282,13 @@ public class MainActivity extends Activity {
 		// Perform file operation and apply settings in the background
 		new Thread(() -> {
 			String clientSettingsPath = rbxpath.concat("exe/ClientSettings/ClientAppSettings.json");
-			String sourceSettingsPath = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
-
-            // Check if the files are different and need to be applied
+			String sourceSettingsPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/Chevstrap/Modifications/ClientSettings/ClientAppSettings.json";
+			new File(sourceSettingsPath);
+			// Check if the files are different and need to be applied
 			if (!FileUtil.readFile(sourceSettingsPath).equals(FileUtil.readFile(clientSettingsPath))) {
-				boolean hasLibFolder = rbxIsLibFolderExisted();
+				boolean RBXWithoutLib = rbxIsLibFolderExisted();
 
-				if (hasLibFolder) {
+				if (RBXWithoutLib) {
 					FileUtil.writeFile(clientSettingsPath, FileUtil.readFile(sourceSettingsPath));
 
 					runOnUiThread(() -> {
@@ -334,20 +334,16 @@ public class MainActivity extends Activity {
 		}).start();
 	}
 
+
 	private void initializeLogic() {
 		Typeface arial = Typeface.createFromAsset(getAssets(), "fonts/arial.ttf");
 
 		textview2.setTypeface(arial);
 		button1.setTypeface(arial);
-		button1_2.setTypeface(arial);
 		button2.setTypeface(arial);
 		button3.setTypeface(arial);
 
 		button1.setBackground(new GradientDrawable() {{
-			setCornerRadius(20);
-			setColor(0xFF090909);
-		}});
-		button1_2.setBackground(new GradientDrawable() {{
 			setCornerRadius(20);
 			setColor(0xFF090909);
 		}});
@@ -364,8 +360,9 @@ public class MainActivity extends Activity {
 		sayhi1.setText(getString(R.string.SayHi));
 
 		_getDataStorage();
+		rbxpath = data_data.replace(getPackageName(), "com.roblox.client");
 
-		String basePath = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/Chevstrap");
+		String basePath = FileUtil.getExternalStorageDir().concat("/Chevstrap");
 		if (!FileUtil.isExistFile(basePath)) FileUtil.makeDir(basePath);
 		if (!FileUtil.isExistFile(basePath + "/Logs")) FileUtil.makeDir(basePath + "/Logs");
 		if (!FileUtil.isExistFile(basePath + "/Modifications")) FileUtil.makeDir(basePath + "/Modifications");
@@ -399,6 +396,7 @@ public class MainActivity extends Activity {
 												Uri.parse("https://github.com/FrosSky/Chevstrap/releases/latest"));
 										startActivity(browserIntent);
 									} catch (Exception e) {
+										Log.e("UpdateIntent", "Failed to open browser", e);
 										Toast.makeText(MainActivity.this, "Failed to open browser", Toast.LENGTH_SHORT).show();
 									}
 								});
@@ -407,20 +405,18 @@ public class MainActivity extends Activity {
 								updateTime.create().show();
 							}
 						} catch (Exception e) {
+							Log.e("UpdateDialog", "Error showing update dialog", e);
 							Toast.makeText(this, "Failed to show update dialog", Toast.LENGTH_SHORT).show();
 						}
 					});
 
 				} catch (Exception e) {
+					Log.e("VersionCheck", "Error during version check", e);
 					Toast.makeText(this, "Version check failed", Toast.LENGTH_SHORT).show();
 				}
 			}).start();
 		}
 
-	}
-
-	public void _getDataStorage() {
-		data_data = getFilesDir().getAbsolutePath() + "/";
 	}
 
 	private void fetchIPInfoIo(String ip, IPInfoCallback callback) {
@@ -456,55 +452,13 @@ public class MainActivity extends Activity {
 		}).start();
 	}
 
-    //public String getUniverseId1() {
-    //    return UniverseId1;
-    //}
-
-    //public void setUniverseId1(String universeId1) {
-	//   UniverseId1 = universeId1;
-    //}
-
     public interface IPInfoCallback {
 		void onSuccess(JSONObject json);
 		void onError(Exception e);
 	}
 
-	public void fetchRBXGameInfo(String universeId, Callback1 callback) {
-		new Thread(() -> {
-			String result;
-			try {
-				BufferedReader reader = getBufferedReader(universeId);
-				StringBuilder response = new StringBuilder();
-				String line;
-
-				while ((line = reader.readLine()) != null)
-					response.append(line);
-
-				reader.close();
-				result = response.toString();
-			} catch (Exception e) {
-				result = "Error: " + e.getMessage();
-			}
-
-			// Return result via callback on UI thread
-			String finalResult = result;
-			new Handler(Looper.getMainLooper()).post(() -> callback.onResult(finalResult));
-		}).start();
-	}
-
-	@NonNull
-	private static BufferedReader getBufferedReader(String universeId) throws IOException {
-		String urlString = "https://games.roblox.com/v1/games?universeIds=" + universeId;
-		URL url = new URL(urlString);
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("GET");
-
-		int status = connection.getResponseCode();
-		InputStream inputStream = (status >= 200 && status < 300)
-				? connection.getInputStream()
-				: connection.getErrorStream();
-
-        return new BufferedReader(new InputStreamReader(inputStream));
+	public void _getDataStorage() {
+		data_data = getFilesDir().getAbsolutePath() + "/";
 	}
 
 	public void showLastServerDialog(String placeIddd, String instanceId) {
@@ -513,7 +467,7 @@ public class MainActivity extends Activity {
 			currentDialogLastServer.dismiss();
 		}
 
-		String deeplink = "roblox://experiences/start?placeId=" + placeIddd + "&gameInstanceId=" + instanceId;
+		//String deeplink = "roblox://experiences/start?placeId=" + placeIddd + "&gameInstanceId=" + instanceId;
 		String webLink = "https://www.roblox.com/games/start?placeId=" + placeIddd + "&gameInstanceId=" + instanceId;
 
 		currentDialogLastServer = new AlertDialog.Builder(this)
@@ -537,10 +491,6 @@ public class MainActivity extends Activity {
 		currentDialogLastServer.show();  // Show the dialog
 	}
 
-	public interface Callback1 {
-		void onResult(String data);
-	}
-
 	public void _catchRBXplace() {
 		if (RBXActivityWatcher != null && !RBXActivityWatcher.isShutdown()) {
 			RBXActivityWatcher.shutdownNow();
@@ -554,7 +504,6 @@ public class MainActivity extends Activity {
 				Thread.currentThread().interrupt();
 			}
 		}
-
 
 		RBXActivityWatcher = Executors.newSingleThreadExecutor();
 
