@@ -53,7 +53,6 @@ import org.json.JSONObject;
 public class MainActivity extends Activity {
 	private ExecutorService RBXActivityWatcher;
 	private String rbxpath = "";
-
 	private String latestLogName = "";
 	private String lastJobId = null;
 	private String lastPlaceId = null;
@@ -61,10 +60,7 @@ public class MainActivity extends Activity {
 	private String UniverseId1 = "";
 	private String appPackageTolaunch = "";
 	private String data_data = "";
-	private boolean isRoot = false;
-
 	private File LLLLFile = null;
-
 	private ScrollView vscroll1;
 	private LinearLayout linear5;
 	private LinearLayout linear7;
@@ -75,8 +71,8 @@ public class MainActivity extends Activity {
 	private TextView sayhi1;
 	private Button button1_2;
 	private AlertDialog currentDialogLastServer = null;
-	private Intent startIntent = new Intent();
-	private Intent teleport = new Intent();
+
+	private final Intent teleport = new Intent();
 	private AlertDialog.Builder maynotopen;
 	private AlertDialog.Builder updateTime;
 	private Handler handler = new Handler();
@@ -128,7 +124,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void copyLLLL() {
-		File targetDir = new File(getExternalFilesDir(null), "Chevstrap/Logs");
+		File targetDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Chevstrap/Logs");
 		File latestLog = new File(String.valueOf(getLLLLFile()));
 
 		if (!targetDir.exists()) {
@@ -286,7 +282,7 @@ public class MainActivity extends Activity {
 		// Perform file operation and apply settings in the background
 		new Thread(() -> {
 			String clientSettingsPath = rbxpath.concat("exe/ClientSettings/ClientAppSettings.json");
-			String sourceSettingsPath = FileUtil.getExternalStorageDir().concat("/Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
+			String sourceSettingsPath = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
 
             // Check if the files are different and need to be applied
 			if (!FileUtil.readFile(sourceSettingsPath).equals(FileUtil.readFile(clientSettingsPath))) {
@@ -369,7 +365,7 @@ public class MainActivity extends Activity {
 
 		_getDataStorage();
 
-		String basePath = FileUtil.getExternalStorageDir().concat("/Chevstrap");
+		String basePath = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/Chevstrap");
 		if (!FileUtil.isExistFile(basePath)) FileUtil.makeDir(basePath);
 		if (!FileUtil.isExistFile(basePath + "/Logs")) FileUtil.makeDir(basePath + "/Logs");
 		if (!FileUtil.isExistFile(basePath + "/Modifications")) FileUtil.makeDir(basePath + "/Modifications");
@@ -446,7 +442,6 @@ public class MainActivity extends Activity {
 				reader.close();
 
 				JSONObject json = new JSONObject(result.toString());
-
 
 				// Send result to callback on main thread
 				new Handler(Looper.getMainLooper()).post(() -> {
@@ -551,10 +546,15 @@ public class MainActivity extends Activity {
 			RBXActivityWatcher.shutdownNow();
 			try {
 				boolean terminated = RBXActivityWatcher.awaitTermination(2, TimeUnit.SECONDS);
+				if (!terminated) {
+					// Handle the case where the shutdown didn't complete in time
+					System.err.println("Timeout occurred while waiting for shutdown.");
+				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
 		}
+
 
 		RBXActivityWatcher = Executors.newSingleThreadExecutor();
 
