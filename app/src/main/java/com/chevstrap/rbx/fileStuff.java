@@ -4,6 +4,20 @@ import java.io.*;
 
 public class fileStuff {
 
+    public static boolean isExistFile(String path) {
+        File file = new File(path);
+        return file.exists();
+    }
+
+    public static void makeDir(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                throw new RuntimeException("Failed to create directory: " + path);
+            }
+        }
+    }
+
     // Method to check if a directory is accessible (exists and readable)
     public static boolean isDirectoryAccessible(String path) {
         File dir = new File(path);
@@ -11,24 +25,26 @@ public class fileStuff {
     }
 
     // Method to delete a directory and all its contents
-    public static void deleteDirectory(String path) {
-        File dir = new File(path);
-        if (dir.exists()) {
-            deleteDirectoryRecursive(dir);
-        }
-    }
 
-    // Recursive helper method for deleting directory contents
-    private static void deleteDirectoryRecursive(File dir) {
-        if (dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    deleteDirectoryRecursive(file); // Recursively delete subdirectories and files
+
+    static void createNewFile(String path) {
+        int lastSep = path.lastIndexOf(File.separator);
+        if (lastSep > 0) {
+            String dirPath = path.substring(0, lastSep);
+            makeDir(dirPath);
+        }
+
+        File file = new File(path);
+
+        try {
+            if (!file.exists()) {
+                if (!file.createNewFile()) {
+                    System.err.println("Failed to create file: " + path);
                 }
             }
+        } catch (IOException e) {
+            System.err.println("IOException occurred while creating file: " + path);
         }
-        dir.delete(); // Delete the file or empty directory
     }
 
     // Method to copy a directory and overwrite any existing files
@@ -58,6 +74,17 @@ public class fileStuff {
         }
     }
 
+    public static void writeFile(String path, String str) {
+        createNewFile(path);
+
+        try (FileWriter fileWriter = new FileWriter(path, false)) {
+            fileWriter.write(str);
+            fileWriter.flush();
+        } catch (IOException ignored) {
+
+        }
+    }
+
     // Helper method to copy files
     private static void copyFile(File source, File destination) {
         try (InputStream in = new FileInputStream(source);
@@ -67,8 +94,8 @@ public class fileStuff {
             while ((length = in.read(buffer)) > 0) {
                 out.write(buffer, 0, length);
             }
-        } catch (IOException e) {
-            e.printStackTrace(); // Handle error
+        } catch (IOException ignored) {
+
         }
     }
 }
