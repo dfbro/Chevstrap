@@ -1,16 +1,12 @@
-
-<manifest
-	xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.chevstrap.rbx">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.chevstrap.rbx">
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"
-        tools:ignore="ScopedStorage" />
+        android:maxSdkVersion="29"/>
 
 	<application
 		android:allowBackup="true"
@@ -44,7 +40,7 @@
 			android:name=".SethereActivity"
 			android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
 			android:hardwareAccelerated="true"
-			android:supportsPictureInPicture="true"
+		 	android:supportsPictureInPicture="true"
 			android:theme="@style/NoActionBar"
 			android:windowSoftInputMode="stateHidden" />
 		<activity
