@@ -10,7 +10,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.os.Environment;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -20,20 +20,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedWriter;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
 
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -50,7 +45,7 @@ public class CodeeditorActivity extends Activity {
 	private HashMap<String, Object> map = new HashMap<>();
 	private HashMap<String, Object> jsonn = new HashMap<>();
 
-    private ArrayList<HashMap<String, Object>> jsoncache = new ArrayList<>();
+	private ArrayList<HashMap<String, Object>> jsoncache = new ArrayList<>();
 	private ArrayList<HashMap<String, Object>> tabjsonhelp = new ArrayList<>();
 	private ArrayList<String> jsa = new ArrayList<>();
 
@@ -76,15 +71,13 @@ public class CodeeditorActivity extends Activity {
 		super.onCreate(_savedInstanceState);
 		setContentView(R.layout.codeeditor);
 		initialize(_savedInstanceState);
-		if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
-				|| checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-			requestPermissions(new String[] {
-					Manifest.permission.READ_EXTERNAL_STORAGE,
-					Manifest.permission.WRITE_EXTERNAL_STORAGE
-			}, 1000);
-		} else {
-			initializeLogic();
-		}
+
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
+                || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1000);
+        } else {
+            initializeLogic();
+        }
     }
 
 	@Override
@@ -112,43 +105,46 @@ public class CodeeditorActivity extends Activity {
 		jsoooon.setType("application/json");
 		jsoooon.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
+		button3.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View _view) {
+				try {
+					String formattedJson = JsonFormatter.formatJson(edittext2.getText().toString());
+					edittext2.setText(formattedJson);
+				} catch (Exception e) {
+					showMessage("Invalid JSON format.");
+					return;
+				}
 
-		button3.setOnClickListener(_view -> {
-            try {
-                String formattedJson = JsonFormatter.formatJson(edittext2.getText().toString());
-                if (Objects.equals(formattedJson, "Invalid JSON")) {
-                    Toast.makeText(CodeeditorActivity.this, "Invalid JSON", Toast.LENGTH_SHORT).show();
-                    return;
-                } else {
-                    edittext2.setText(formattedJson);
-                }
-            } catch (Exception ignore) {
+				_getDataStorage();
+				rbxpath = data_data.replace(getPackageName(), "com.roblox.client");
 
-            }
+				File clientSettingsDir = new File(android.os.Environment.getExternalStorageDirectory(), "Chevstrap/Modifications/ClientSettings");
 
-            File clientSettingsDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Modifications/ClientSettings");
+				if (!clientSettingsDir.exists()) {
+					boolean dirCreated = clientSettingsDir.mkdirs();
+					if (!dirCreated) {
+						return; // Exit early if directory creation fails
+					}
+				}
 
-            if (!clientSettingsDir.exists()) {
-                boolean dirCreated = clientSettingsDir.mkdirs();
-                if (!dirCreated) {
-                    return; // Exit early if directory creation fails
-                }
-            }
+				File outFile = new File(clientSettingsDir, "ClientAppSettings.json");
 
-            File outFile = new File(clientSettingsDir, "ClientAppSettings.json");
-
-			fileStuff.writeFile(String.valueOf(clientSettingsDir), edittext2.getText().toString());
-
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(outFile)))) {
-				// If reading was successful
-				showMessage("FFlags have been successfully changed");
-			} catch (IOException e) {
-				// If there's an error reading the file
-				showMessage("Error writing from file");
+				try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile)))) {
+					writer.write(edittext2.getText().toString());
+					showMessage("FFlags have been successfully changed");
+				} catch (IOException e) {
+					showMessage("Error writing to file: " + e.getMessage());
+				}
 			}
-        });
+		});
 
-		button5.setOnClickListener(_view -> startActivityForResult(jsoooon, REQ_CD_JSOOOON));
+		button5.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View _view) {
+				startActivityForResult(jsoooon, REQ_CD_JSOOOON);
+			}
+		});
 
 		linear10.setOnClickListener(_view -> {
 			// Placeholder for future functionality
@@ -184,7 +180,10 @@ public class CodeeditorActivity extends Activity {
 		button5.setText(getString(R.string.LoadText));
 		edittext2.setHint(getString(R.string.TypeHere));
 
-		File configFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
+		_getDataStorage();
+		rbxpath = data_data.replace(getPackageName(), "com.roblox.client");
+
+		File configFile = new File(android.os.Environment.getExternalStorageDirectory(), "Chevstrap/Modifications/ClientSettings/ClientAppSettings.json");
 		if (configFile.exists()) {
 			edittext2.setText(FileUtil.readFile(configFile.getAbsolutePath()));
 		}
@@ -216,6 +215,11 @@ public class CodeeditorActivity extends Activity {
 				}
 			}
 		}
+	}
+
+	private void _getDataStorage() {
+		data_data = getFilesDir().getAbsolutePath();
+		if (!data_data.endsWith("/")) data_data += "/";
 	}
 
 	private void showMessage(String _s) {
