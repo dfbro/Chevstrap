@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,11 +49,12 @@ public class MainActivity extends AppCompatActivity {
 		textview_version = findViewById(R.id.textview_version);
 
 		buttonLaunchrbx.setOnClickListener(v -> {
-			FFlagsSettingsManager manager = new FFlagsSettingsManager(getApplicationContext());
+			FFlagsSettingsManager manager = new FFlagsSettingsManager(this); // 'this' is Activity context
 			try {
 				launchHandler.LaunchRoblox(manager.getPackageTarget());
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				//e.printStackTrace();
+				Toast.makeText(this, "Launch failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
 			}
 		});
 
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 			dialog.show(getSupportFragmentManager(), "aD");
 		});
 	}
+
 
 	private void initializeLogic() {
 		aboutApp app = new aboutApp(getApplicationContext());
