@@ -1,5 +1,7 @@
 package com.chevstrap.rbx;
 
+import static com.chevstrap.rbx.LaunchHandler.isRootAvailable;
+
 import android.Manifest;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -173,16 +175,18 @@ public class SettingsActivity extends AppCompatActivity {
 
 		button_saveandlaunch.setOnClickListener(_view -> {
 			saveLastChanged();
-            try {
-                launchHandler.LaunchRoblox(getPackageTarget());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+			applyFastFlag(getApplicationContext());
+				try {
+					launchHandler.LaunchRoblox(getPackageTarget());
+				} catch (IOException e) {
+					//e.printStackTrace();
+					Toast.makeText(this, "Launch failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+				}
         });
 
 		button_save.setOnClickListener(_view -> {
-			saveLastChanged();
-		});
+            saveLastChanged();
+        });
 	}
 
 	private void initializeLogic() {
@@ -619,7 +623,7 @@ public class SettingsActivity extends AppCompatActivity {
 	}
 
 	public void LaunchWatcher() {
-		if (!isExistSettingKey1("ShowServerDetails")) return;
+		if (isExistSettingKey1("ShowServerDetails")) return;
 		if (!getStateSettingKey1("EnableActivityTracking")) return;
 
 		if (RBXActivityWatcher != null && !RBXActivityWatcher.isShutdown()) {
@@ -774,8 +778,8 @@ public class SettingsActivity extends AppCompatActivity {
 	}
 
 	private void saveLastChanged() {
-
 		getRbxPath();
+
 		File clientSettingsDir = new File(_getDataStorage(), "Modifications/ClientSettings");
 		if (!clientSettingsDir.exists() && !clientSettingsDir.mkdirs()) {
 			return;
@@ -789,69 +793,17 @@ public class SettingsActivity extends AppCompatActivity {
 
 		try {
 			FileTool.write(outFile1, FileTool.read(outFile2));
-			// showMessage("FFlags have been successfully changed");
+			showMessage("FFlags saved");
 		} catch (IOException e) {
 			showMessage("Error writing to file: " + e.getMessage());
 		}
 
 		try {
 			FileTool.write(outFile3, FileTool.read(outFile4));
-			// showMessage("FFlags have been successfully changed");
 		} catch (IOException e) {
 			showMessage("Error writing to file: " + e.getMessage());
-		}
+        }
 	}
-
-	void applyFastFlag() {
-		getRbxPath();
-		boolean isAllowed = Boolean.parseBoolean(getSetting("UseFastFlagManager"));
-
-		if (!isExistSettingKey1("UseFastFlagManager")) isAllowed = true;
-		if (isAllowed) {
-			File clientSettingsDir = new File(_getDataStorage(), "Modifications/ClientSettings");
-			File outFile1 = new File(clientSettingsDir, "ClientAppSettings.json");
-
-			try {
-				FileToolAlt.createDirectoryWithPermissions(rbxpath + "exe/ClientSettings");
-
-				if (FileToolAlt.pathExists(rbxpath + "exe/ClientSettings")) {
-					showMessage("FFlags have been successfully changed");
-					FileToolAlt.writeFile(rbxpath + "exe/ClientSettings/ClientAppSettings.json", FileTool.read(outFile1));
-				} else {
-					System.out.println("Directory does not exist or SELinux is blocking access.");
-				}
-			} catch (IOException ignored) {
-				//e.printStackTrace();
-			}
-			File clientSettingsJson = new File(rbxpath, "exe/ClientSettings/ClientAppSettings.json");
-
-			try {
-				FileTool.write(clientSettingsJson, FileTool.read(outFile1));
-				showMessage("FFlags have been successfully changed");
-			} catch (IOException e) {
-				// showMessage("Error writing to file: " + e.getMessage());
-			}
-		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	public void showMessageBoxUnsavedLastChanged() {
@@ -1170,5 +1122,52 @@ public class SettingsActivity extends AppCompatActivity {
 			}
 		});
 		return fragment;
+	}
+
+	void applyFastFlag(Context context) {
+		getRbxPath();
+		boolean isAllowed = Boolean.parseBoolean(getSetting("UseFastFlagManager"));
+
+		if (isExistSettingKey1("UseFastFlagManager")) {
+			isAllowed = true;
+		}
+
+		if (!isAllowed) return;
+
+		File clientSettingsDir = new File(_getDataStorage(), "Modifications/ClientSettings");
+		File outFile1 = new File(clientSettingsDir, "ClientAppSettings.json");
+
+		boolean root = isRootAvailable();
+
+		if (root) {
+			try {
+				String targetDir = rbxpath + "exe/ClientSettings";
+				String targetFile = targetDir + "/ClientAppSettings.json";
+
+				FileToolAlt.createDirectoryWithPermissions(targetDir);
+
+				if (FileToolAlt.pathExists(targetDir)) {
+					FileToolAlt.writeFile(targetFile, FileTool.read(outFile1));
+					Toast.makeText(context, "FastFlag applied with root access", Toast.LENGTH_SHORT).show();
+					return;
+				} else {
+					Toast.makeText(context, "Directory blocked by SELinux or does not exist", Toast.LENGTH_SHORT).show();
+				}
+			} catch (IOException e) {
+				Toast.makeText(context, "Root write failed, using fallback", Toast.LENGTH_SHORT).show();
+			}
+		}
+
+		File clientSettingsJson = new File(rbxpath, "exe/ClientSettings/ClientAppSettings.json");
+		if (!clientSettingsDir.exists() && !clientSettingsDir.mkdirs()) {
+			return;
+		}
+
+		try {
+			FileTool.write(clientSettingsJson, FileTool.read(outFile1));
+			Toast.makeText(context, "FastFlag applied without root", Toast.LENGTH_SHORT).show();
+		} catch (IOException e) {
+			Toast.makeText(context, "Fallback write failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+		}
 	}
 }
