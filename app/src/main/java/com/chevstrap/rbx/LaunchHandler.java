@@ -20,13 +20,7 @@ import com.chevstrap.rbx.Utility.FileToolAlt;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -37,30 +31,25 @@ public class LaunchHandler {
     private String packageName = "";
     private boolean allowedToLaunch = false;
     private boolean isCancelled = false;
+
     public LaunchHandler(@NonNull Context context, @NonNull FragmentManager fragmentManager) {
         this.context = context;
         this.fragmentManager = fragmentManager;
     }
-
     public void LaunchRoblox(String packageName) throws IOException {
         this.packageName = packageName;
         isCancelled = false;
 
-        String rbxPath;
+        ApplicationInfo appInfo;
         try {
-            ApplicationInfo info = context.getPackageManager().getApplicationInfo(packageName, 0);
-            rbxPath = info.dataDir + "/files/";
+            appInfo = context.getPackageManager().getApplicationInfo(packageName, 0);
         } catch (PackageManager.NameNotFoundException e) {
+            Log.e("LaunchHandler", "Package not found: " + packageName, e);
             return;
         }
 
-        String rbxCachesPaths;
-        try {
-            ApplicationInfo info = context.getPackageManager().getApplicationInfo(packageName, 0);
-            rbxCachesPaths = info.dataDir + "/cache/";
-        } catch (PackageManager.NameNotFoundException e) {
-            return;
-        }
+        String rbxPath = appInfo.dataDir + "/files/";
+        String rbxCachesPaths = appInfo.dataDir + "/cache/";
 
         File clientSettingsDir = new File(getDataStorage(), "Modifications/ClientSettings");
         if (!clientSettingsDir.exists() && !clientSettingsDir.mkdirs()) return;
@@ -70,24 +59,47 @@ public class LaunchHandler {
         String clientSettingsPath = rbxPath + "exe/ClientSettings/ClientAppSettings.json";
 
         LoadingFragment fragment = createLoadingDialog();
+        fragment.setCancelable(false);
 
         new Handler(Looper.getMainLooper()).post(() -> {
             fragment.setMessageText("Preparing...");
             fragment.setMessageStatus("0%");
             try {
                 fragment.show(fragmentManager, "Messagebox");
-            } catch (IllegalStateException ignored) {}
+            } catch (IllegalStateException ignored) {
+            }
         });
 
-        boolean sourceExists = new File(sourceSettingsPath).exists();
-        boolean clientExists = new File(clientSettingsPath).exists() || FileToolAlt.isExists(clientSettingsPath);
-        boolean bothExist = sourceExists && clientExists;
-        boolean libExists = rbxIsLibFolderExisted();
+        boolean sourceExists;
+        boolean clientExists = new File(clientSettingsPath).exists();
+
+        if (!clientExists && isRootAvailable()) {
+            clientExists = FileToolAlt.isExists(clientSettingsPath);
+        }
+
+        boolean bothExist;
+        boolean libExists;
 
         String resultChangesFlags = FileTool.read(new File(clientSettingsPath));
-        if (resultChangesFlags.isEmpty()) {
+        if (resultChangesFlags.isEmpty() && isRootAvailable()) {
             resultChangesFlags = FileToolAlt.readFile(sourceSettingsPath);
         }
+
+        if (!clientExists) {
+            Toast.makeText(context, "Client settings file not found", Toast.LENGTH_SHORT).show();
+            FFlagsSettingsManager manager = new FFlagsSettingsManager(context);
+            manager.applyFastFlag(context);
+        }
+
+        sourceExists = new File(sourceSettingsPath).exists();
+        clientExists = new File(clientSettingsPath).exists();
+
+        if (!clientExists && isRootAvailable()) {
+            clientExists = FileToolAlt.isExists(clientSettingsPath);
+        }
+
+        bothExist = sourceExists && clientExists;
+        libExists = rbxIsLibFolderExisted();
 
         allowedToLaunch = false;
 
@@ -97,52 +109,12 @@ public class LaunchHandler {
                 String currentFlags = FileTool.read(new File(sourceSettingsPath));
                 if (!currentFlags.equals(finalResultChangesFlags)) {
                     fragment.setMessageText("Applying Roblox fast flags");
-
-                    if (context instanceof SettingsActivity) {
-                        ((SettingsActivity) context).applyFastFlag();
-                    } else {
-                        Log.w("FastFlag", "Context is not an instance of SettingsActivity");
-                        Toast.makeText(context, "Not a SettingsActivity", Toast.LENGTH_SHORT).show();
-                    }
+                    new FFlagsSettingsManager(context).applyFastFlag(context);
                 }
 
                 new Thread(() -> {
                     if (isCancelled) return;
-
-                    if (getStateSettingKey("ClearCacheEveryRBXLaunch")) {
-                        File cacheRBXDir = new File(rbxCachesPaths);
-                        File[] files = null;
-
-                        // Ensure the directory exists
-                        if (!cacheRBXDir.exists()) {
-                            try {
-                                if (FileToolAlt.isExists(cacheRBXDir.getAbsolutePath())) {
-                                    files = FileToolAlt.listFiles(cacheRBXDir.getAbsolutePath());
-                                } else {
-                                    // Directory does not exist, nothing to delete
-                                    return;
-                                }
-                            } catch (IOException e) {
-                                Log.e("RBX Cache", "Error accessing cache directory", e);
-                                return;
-                            }
-                        } else {
-                            files = cacheRBXDir.listFiles();
-                        }
-
-                        // Proceed with file deletion
-                        if (files != null) {
-                            for (File file : files) {
-                                if (file.isFile()) {
-                                    if (file.delete()) {
-                                        Log.d("RBX Cache", "Deleted: " + file.getName());
-                                    } else {
-                                        Log.w("RBX Cache", "Failed to delete: " + file.getName());
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    handleCacheClear(rbxCachesPaths);
                 }).start();
 
                 animateProgress(fragment, 0, 50, () -> {
@@ -151,7 +123,9 @@ public class LaunchHandler {
                     new Thread(() -> {
                         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(clientSettingsPath)))) {
                             writer.write(readFile(outFile));
-                        } catch (IOException ignored) {}
+                        } catch (IOException e) {
+                            Log.e("LaunchHandler", "Failed to write fast flags", e);
+                        }
 
                         new Handler(Looper.getMainLooper()).post(() -> {
                             if (isCancelled) return;
@@ -162,21 +136,22 @@ public class LaunchHandler {
 
                                 animateProgress(fragment, 90, 100, () -> {
                                     if (isCancelled) return;
+
                                     allowedToLaunch = true;
                                     Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
                                     if (launchIntent != null) {
-                                        if (context instanceof Activity && context instanceof SettingsActivity) {
+                                        if (context instanceof SettingsActivity) {
                                             ((SettingsActivity) context).LaunchWatcher();
-                                        }
-                                        if (context instanceof Activity && context instanceof MainActivity) {
+                                        } else if (context instanceof MainActivity) {
                                             ((MainActivity) context).LaunchWatcher();
                                         }
+
                                         context.startActivity(launchIntent);
                                         if (fragment.isAdded()) {
                                             fragment.dismissAllowingStateLoss();
                                         }
                                     } else {
-                                        fragment.setMessageText("Failed Launching Roblox");
+                                        fragment.setMessageText("Failed to launch Roblox");
                                         fragment.setMessageStatus("-");
                                     }
                                 });
@@ -185,19 +160,45 @@ public class LaunchHandler {
                     }).start();
                 });
             });
-
         } else {
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (!bothExist) {
+                if (bothExist) {
                     fragment.setMessageText("Your fast flags files are missing. Please go back to settings and save them again");
                 } else {
-                    fragment.setMessageText("Your Roblox may have been modified. Please download Roblox only on the official site");
+                    fragment.setMessageText("Your Roblox may have been modified. Please download Roblox only from the official source.");
                 }
                 fragment.setMessageStatus("-");
             });
         }
     }
 
+    private void handleCacheClear(String rbxCachesPaths) {
+        if (!getStateSettingKey("ClearCacheEveryRBXLaunch")) return;
+
+        File cacheDir = new File(rbxCachesPaths);
+        File[] files = null;
+
+        if (!cacheDir.exists() && isRootAvailable()) {
+            try {
+                if (FileToolAlt.isExists(rbxCachesPaths)) {
+                    files = FileToolAlt.listFiles(rbxCachesPaths);
+                }
+            } catch (IOException e) {
+                Log.e("RBX Cache", "Error accessing cache via root", e);
+                return;
+            }
+        } else {
+            files = cacheDir.listFiles();
+        }
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile() && !file.delete()) {
+                    Log.w("RBX Cache", "Failed to delete: " + file.getName());
+                }
+            }
+        }
+    }
 
     private void animateProgress(LoadingFragment fragment, int start, int end, Runnable onComplete) {
         Handler handler = new Handler(Looper.getMainLooper());
@@ -212,7 +213,6 @@ public class LaunchHandler {
             @Override
             public void run() {
                 if (isCancelled) return;
-
                 if (progress <= end) {
                     fragment.setMessageStatus(((int) progress) + "%");
                     progress += increment;
@@ -228,21 +228,19 @@ public class LaunchHandler {
         handler.post(task[0]);
     }
 
-
     private boolean rbxIsLibFolderExisted() {
         try {
-            PackageManager pm = context.getPackageManager();
-            ApplicationInfo ai = pm.getApplicationInfo(packageName, 0);
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(packageName, 0);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try (ZipFile zipFile = new ZipFile(ai.sourceDir)) {
                     for (ZipEntry entry : Collections.list(zipFile.entries())) {
-                        if (entry.getName().startsWith("lib/")) {
-                            return true;
-                        }
+                        if (entry.getName().startsWith("lib/")) return true;
                     }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            Log.e("LaunchHandler", "Error checking lib folder", e);
+        }
         return false;
     }
 
@@ -270,29 +268,32 @@ public class LaunchHandler {
 
     private boolean getStateSettingKey(String key) {
         File file = new File(getDataStorage(), "LastAppSettings.json");
-
         if (!file.exists()) return false;
 
         try {
             JSONObject jsonObject = new JSONObject(readFile(file));
-            if (jsonObject.has(key)) {
-                return Boolean.parseBoolean(jsonObject.getString(key));
-            }
-        } catch (Exception ignored) {}
-
+            return jsonObject.optBoolean(key, false);
+        } catch (Exception e) {
+            Log.e("LaunchHandler", "Error reading settings JSON", e);
+        }
         return false;
     }
 
+    public static boolean isRootAvailable() {
+        return FileToolAlt.isRootAvailable();
+    }
+
     private String readFile(File file) {
-        StringBuilder sb = new StringBuilder();
         if (!file.exists()) return "";
+        StringBuilder sb = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line).append('\n');
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            Log.e("LaunchHandler", "Error reading file", e);
+        }
         return sb.toString().trim();
     }
 }
-
