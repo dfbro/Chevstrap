@@ -1174,7 +1174,7 @@ public class FastflagsSettingsFragment extends Fragment {
 			spinner3.setSelection(selectedIndex);
 		}
 
-		if (IsExistFlag("FFlagDebugGraphicsPreferDirect3D11")) {
+		if (IsExistFlag("FFlagDebugGraphicsPreferD3D11")) {
 			int index = 0;
 
 			try {
