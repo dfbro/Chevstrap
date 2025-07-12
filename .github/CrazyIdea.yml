@@ -1,0 +1,38 @@
+name: Replace Main with v1.9 (Keep Workflows)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  replace-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required to fetch all branches/tags
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Save current workflows from main
+        run: |
+          git checkout origin/main -- .github/workflows
+          mkdir workflows-backup
+          mv .github/workflows workflows-backup/
+
+      - name: Reset main to v1.9
+        run: |
+          git checkout v1.9
+          git checkout -B main
+          rm -rf .github/workflows  # Remove whatever was in v1.9
+          mv workflows-backup/workflows .github/
+
+      - name: Commit and force-push main
+        run: |
+          git add .github
+          git commit -m "Reset main to v1.9 but preserved workflows"
+          git push origin main --force
