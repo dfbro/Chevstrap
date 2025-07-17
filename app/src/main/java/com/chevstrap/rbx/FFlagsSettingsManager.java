@@ -62,7 +62,7 @@ public class FFlagsSettingsManager {
 
         if (FileToolAlt.isRootAvailable()) {
             String targetDir = rbxpathh + "appData/ClientSettings";
-            String targetFile = targetDir + "IxpSettings.json";
+            String targetFile = targetDir + "/IxpSettings.json";
 
             FileToolAlt.createDirectoryWithPermissions(targetDir);
 
