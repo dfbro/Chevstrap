@@ -49,59 +49,69 @@ public class FFlagsSettingsManager {
 
     }
 
-	public static void applyFastFlag(Context context) throws IOException {
-		String packageTarget = getPackageTarget(context);
-		String rbxPath = INeedPath.getRBXPathDir(context, packageTarget);
+    public static void applyFastFlag(Context context) throws IOException {
+        String packageTarget = getPackageTarget(context);
+        String rbxPath = INeedPath.getRBXPathDir(context, packageTarget);
 
-		if (isExistSettingKey1(context, "UseFastFlagManager")) {
-			boolean useFFM = Boolean.parseBoolean(getSetting1(context, "UseFastFlagManager"));
-			if (useFFM) {
-				throw new IllegalStateException("No permission to apply fast flags");
-			}
-		}
+        if (isExistSettingKey1(context, "UseFastFlagManager")) {
+            boolean useFFM = Boolean.parseBoolean(getSetting1(context, "UseFastFlagManager"));
+            if (useFFM) {
+                throw new IllegalStateException("No permission to apply fast flags");
+            }
+        }
 
-		// Prepare paths
-		File sourceFile = new File(context.getFilesDir(), "Modifications/ClientSettings/ClientAppSettings.json");
-		String sourcePath = sourceFile.getAbsolutePath();
-		String targetDir = rbxPath + "appData/ClientSettings";
-		String targetPath = targetDir + "/IxpSettings.json";
+        // Prepare paths
+        File sourceFile = new File(context.getFilesDir(), "Modifications/ClientSettings/ClientAppSettings.json");
+        String sourcePath = sourceFile.getAbsolutePath();
+        String targetDir = rbxPath + "appData/ClientSettings";
+        String targetPath = targetDir + "/IxpSettings.json";
 
-		// Compose shell command sequence
-		String shellCommand =
-			"mkdir -p \"" + targetDir + "\" && " +
-			"touch \"" + targetPath + "\" && " +
-			"cp -f \"" + sourcePath + "\" \"" + targetPath + "\"";
+        String shellCommand =
+            "mkdir -p \"" + targetDir + "\" && " +
+            "touch \"" + targetPath + "\" && " +
+            "cp -f \"" + sourcePath + "\" \"" + targetPath + "\"";
 
-		// Log command to /data/data/com.chevstrap.rbx/cmd.log
-		File logFile = new File(context.getApplicationInfo().dataDir, "cmd.log");
-		try (FileWriter logWriter = new FileWriter(logFile, true)) {
-			logWriter.write(shellCommand + "\n");
-		} catch (Exception e) {
-			Log.e("FFlags", "Failed to write cmd.log", e);
-		}
+        File logFile = new File(context.getApplicationInfo().dataDir, "cmd.log");
 
-		// Inline shell execution
-		Process process;
-		if (FileToolAlt.isRootAvailable()) {
-			process = Runtime.getRuntime().exec(new String[]{"su", "-c", shellCommand});
-		} else {
-			File testTarget = new File(targetPath);
-			if (!testTarget.canWrite()) {
-				throw new IOException("No root and cannot write to target path: " + targetPath);
-			}
-			process = Runtime.getRuntime().exec(new String[]{"sh", "-c", shellCommand});
-		}
+        Process process;
+        if (FileToolAlt.isRootAvailable()) {
+            process = Runtime.getRuntime().exec(new String[]{"su", "-c", shellCommand});
+        } else {
+            File testTarget = new File(targetPath);
+            if (!testTarget.canWrite()) {
+                throw new IOException("No root and cannot write to target path: " + targetPath);
+            }
+            process = Runtime.getRuntime().exec(new String[]{"sh", "-c", shellCommand});
+        }
 
-		try {
-			int result = process.waitFor();
-			if (result != 0) {
-				throw new IOException("Shell command failed with exit code " + result);
-			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new IOException("Shell command interrupted", e);
-		}
-	}
+        // Capture output
+        StringBuilder output = new StringBuilder();
+        try (
+            BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader stderr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            FileWriter logWriter = new FileWriter(logFile, true)
+        ) {
+            String line;
+            logWriter.write(">> " + shellCommand + "\n");
+
+            while ((line = stdout.readLine()) != null) {
+                output.append("[STDOUT] ").append(line).append("\n");
+            }
+            while ((line = stderr.readLine()) != null) {
+                output.append("[STDERR] ").append(line).append("\n");
+            }
+
+            int result = process.waitFor();
+            output.append("Exit code: ").append(result).append("\n");
+
+            logWriter.write(output.toString());
+            logWriter.write("\n");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Shell command interrupted", e);
+        }
+    }
+
 
     public static boolean isExistSettingKey1(Context context, String keyName) {
         File filePath = new File(context.getFilesDir(), "AppSettings.json");
