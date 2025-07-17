@@ -15,9 +15,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 
 public class FFlagsSettingsManager {
     private final Context context;
@@ -50,91 +47,57 @@ public class FFlagsSettingsManager {
 
     }
 
-    public static void applyFastFlag(Context context) throws IOException {
-        String rbxpathh = INeedPath.getRBXPathDir(context, getPackageTarget(context));
+	public static void applyFastFlag(Context context) throws IOException {
+		String packageTarget = getPackageTarget(context);
+		String rbxPath = INeedPath.getRBXPathDir(context, packageTarget);
 
-        // Log rbxpathh to logcat and path.txt
-        Log.d("RBXPathLogger", "RBXPath: " + rbxpathh);
-        FileTool.write(new File(context.getFilesDir(), "path.txt"), rbxpathh);
+		if (isExistSettingKey1(context, "UseFastFlagManager")) {
+			boolean useFFM = Boolean.parseBoolean(getSetting1(context, "UseFastFlagManager"));
+			if (useFFM) {
+				throw new IllegalStateException("No permission to apply fast flags");
+			}
+		}
 
-        // Check user setting
-        if (isExistSettingKey1(context, "UseFastFlagManager")) {
-            boolean bo3 = Boolean.parseBoolean(getSetting1(context, "UseFastFlagManager"));
-            if (bo3) {
-                throw new IllegalStateException("No permission to apply fast flags");
-            }
-        }
+		// Prepare paths
+		File sourceFile = new File(context.getFilesDir(), "Modifications/ClientSettings/ClientAppSettings.json");
+		String sourcePath = sourceFile.getAbsolutePath();
+		String targetDir = rbxPath + "appData/ClientSettings";
+		String targetPath = targetDir + "/IxpSettings.json";
 
-        // Source: internal JSON file
-        File clientSettingsDir = new File(context.getFilesDir(), "Modifications/ClientSettings");
-        File outFile1 = new File(clientSettingsDir, "ClientAppSettings.json");
+		// Create directory if needed
+		FileToolAlt.createDirectoryWithPermissions(targetDir);
 
-        if (!outFile1.exists()) {
-            throw new IOException("Source file does not exist: " + outFile1.getAbsolutePath());
-        }
+		if (!FileToolAlt.pathExists(targetDir)) {
+			throw new IOException("Target directory inaccessible or blocked by SELinux: " + targetDir);
+		}
 
-        // Destination
-        String targetDir = rbxpathh + "appData/ClientSettings";
-        String targetFile = targetDir + "/IxpSettings.json";
+		String copyCommand = String.format("cp -f \"%s\" \"%s\"", sourcePath, targetPath);
 
-        // Ensure the directory exists
-        FileToolAlt.createDirectoryWithPermissions(targetDir);
+		// If root is available, use `su`
+		if (FileToolAlt.isRootAvailable()) {
+			execShell("su", copyCommand);
+		} else {
+			// Try using sh (only works if the target is writable)
+			File targetTest = new File(targetPath);
+			if (!targetTest.canWrite()) {
+				throw new IOException("No root and cannot write to target path: " + targetPath);
+			}
+			execShell("sh", copyCommand);
+		}
+	}
 
-        try {
-            // Use shell cp -f to copy
-            String cmd = "mkdir -p \"" + targetDir + "\" && cp -f \"" +
-                         outFile1.getAbsolutePath() + "\" \"" + targetFile + "\"";
-            runCommand(cmd);
-            return;
-        } catch (Exception e) {
-            Log.e("FFlagApply", "Shell copy failed, using Java fallback", e);
-        }
-
-        // Fallback if shell command fails
-        File fallbackFile = new File(targetFile);
-        String content = FileTool.read(outFile1);
-        FileTool.write(fallbackFile, content);
-    }
-
-    private static void runCommand(String command) throws IOException {
-        String[] cmd;
-        if (FileToolAlt.isRootAvailable()) {
-            cmd = new String[]{"su", "-c", command};
-        } else {
-            cmd = new String[]{"sh", "-c", command};
-        }
-
-        Process process = Runtime.getRuntime().exec(cmd);
-
-        // Read stdout
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuilder stdout = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            stdout.append(line).append("\n");
-        }
-
-        // Read stderr
-        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        StringBuilder stderr = new StringBuilder();
-        while ((line = errorReader.readLine()) != null) {
-            stderr.append(line).append("\n");
-        }
-
-        try {
-            int result = process.waitFor();
-            Log.d("FFlags", "Command exit: " + result);
-            if (!stdout.toString().isEmpty()) {
-                Log.d("FFlags", "stdout:\n" + stdout);
-            }
-            if (!stderr.toString().isEmpty()) {
-                Log.e("FFlags", "stderr:\n" + stderr);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            Log.e("FFlags", "Command interrupted", e);
-        }
-    }
+	private static void execShell(String shell, String command) throws IOException {
+		Process process = Runtime.getRuntime().exec(new String[]{shell, "-c", command});
+		try {
+			int result = process.waitFor();
+			if (result != 0) {
+				throw new IOException(shell + " command failed with exit code " + result);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IOException(shell + " command interrupted", e);
+		}
+	}
 
     public static boolean isExistSettingKey1(Context context, String keyName) {
         File filePath = new File(context.getFilesDir(), "AppSettings.json");
