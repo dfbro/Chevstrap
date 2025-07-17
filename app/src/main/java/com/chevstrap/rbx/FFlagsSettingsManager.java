@@ -50,6 +50,11 @@ public class FFlagsSettingsManager {
     public static void applyFastFlag(Context context) throws IOException {
         String rbxpathh = INeedPath.getRBXPathDir(context, getPackageTarget(context));
 
+        // Log rbxpathh to logcat and path.txt
+        Log.d("RBXPathLogger", "RBXPath: " + rbxpathh);
+        FileTool.write(new File(context.getFilesDir(), "path.txt"), rbxpathh);
+
+        // Check user setting
         if (isExistSettingKey1(context, "UseFastFlagManager")) {
             boolean bo3 = Boolean.parseBoolean(getSetting1(context, "UseFastFlagManager"));
             if (bo3) {
@@ -57,38 +62,55 @@ public class FFlagsSettingsManager {
             }
         }
 
+        // Source: internal JSON file
         File clientSettingsDir = new File(context.getFilesDir(), "Modifications/ClientSettings");
         File outFile1 = new File(clientSettingsDir, "ClientAppSettings.json");
 
-        if (FileToolAlt.isRootAvailable()) {
-            String targetDir = rbxpathh + "appData/ClientSettings";
-            String targetFile = targetDir + "/IxpSettings.json";
-
-            FileToolAlt.createDirectoryWithPermissions(targetDir);
-
-            if (FileToolAlt.pathExists(targetDir)) {
-                FileToolAlt.writeFile(targetFile, FileTool.read(outFile1));
-                return;
-            } else {
-                throw new IOException("Directory blocked by SELinux or does not exist: " + targetDir);
-            }
+        if (!outFile1.exists()) {
+            throw new IOException("Source file does not exist: " + outFile1.getAbsolutePath());
         }
 
-        // Fallback
-        String fallbackDirPath = rbxpathh + "exe/ClientSettings";
-        File fallbackDir = new File(fallbackDirPath);
-        File fallbackFile = new File(fallbackDir, "ClientAppSettings.json");
+        // Destination
+        String targetDir = rbxpathh + "appData/ClientSettings";
+        String targetFile = targetDir + "/IxpSettings.json";
 
-        if (!fallbackDir.exists() && !fallbackDir.mkdirs()) {
-            throw new IOException("Failed to create fallback ClientSettings directory: " + fallbackDirPath);
+        // Ensure the directory exists
+        FileToolAlt.createDirectoryWithPermissions(targetDir);
+
+        try {
+            // Use shell cp -f to copy
+            String cmd = "mkdir -p \"" + targetDir + "\" && cp -f \"" +
+                         outFile1.getAbsolutePath() + "\" \"" + targetFile + "\"";
+            runCommand(cmd);
+            return;
+        } catch (Exception e) {
+            Log.e("FFlagApply", "Shell copy failed, using Java fallback", e);
         }
 
+        // Fallback if shell command fails
+        File fallbackFile = new File(targetFile);
         String content = FileTool.read(outFile1);
-        if (content.isEmpty()) {
-            throw new IOException("Source file is empty or unreadable: " + outFile1.getAbsolutePath());
-        }
-
         FileTool.write(fallbackFile, content);
+    }
+
+    public static void runCommand(String command) throws IOException {
+        Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+        try {
+            int exitCode = process.waitFor();
+
+            String stdout = new String(process.getInputStream().readAllBytes());
+            String stderr = new String(process.getErrorStream().readAllBytes());
+
+            Log.d("Shell", "stdout: " + stdout);
+            Log.d("Shell", "stderr: " + stderr);
+
+            if (exitCode != 0) {
+                throw new IOException("Command failed with exit code " + exitCode + ": " + stderr);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Command interrupted", e);
+        }
     }
 
     public static boolean isExistSettingKey1(Context context, String keyName) {
