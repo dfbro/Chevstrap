@@ -61,8 +61,8 @@ public class FFlagsSettingsManager {
         File outFile1 = new File(clientSettingsDir, "ClientAppSettings.json");
 
         if (FileToolAlt.isRootAvailable()) {
-            String targetDir = rbxpathh + "exe/ClientSettings";
-            String targetFile = targetDir + "/ClientAppSettings.json";
+            String targetDir = rbxpathh + "appData/ClientSettings";
+            String targetFile = targetDir + "IxpSettings.json";
 
             FileToolAlt.createDirectoryWithPermissions(targetDir);
 
