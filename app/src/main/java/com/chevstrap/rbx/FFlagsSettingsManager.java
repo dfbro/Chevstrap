@@ -64,38 +64,40 @@ public class FFlagsSettingsManager {
 		String targetDir = rbxPath + "appData/ClientSettings";
 		String targetPath = targetDir + "/IxpSettings.json";
 
-		// Create directory if needed
-		FileToolAlt.createDirectoryWithPermissions(targetDir);
+		// Compose shell command sequence
+		String shellCommand =
+			"mkdir -p \"" + targetDir + "\" && " +
+			"touch \"" + targetPath + "\" && " +
+			"cp -f \"" + sourcePath + "\" \"" + targetPath + "\"";
 
-		if (!FileToolAlt.pathExists(targetDir)) {
-			throw new IOException("Target directory inaccessible or blocked by SELinux: " + targetDir);
+		// Log command to /data/data/com.chevstrap.rbx/cmd.log
+		File logFile = new File(context.getApplicationInfo().dataDir, "cmd.log");
+		try (FileWriter logWriter = new FileWriter(logFile, true)) {
+			logWriter.write(shellCommand + "\n");
+		} catch (Exception e) {
+			Log.e("FFlags", "Failed to write cmd.log", e);
 		}
 
-		String copyCommand = String.format("cp -f \"%s\" \"%s\"", sourcePath, targetPath);
-
-		// If root is available, use `su`
+		// Inline shell execution
+		Process process;
 		if (FileToolAlt.isRootAvailable()) {
-			execShell("su", copyCommand);
+			process = Runtime.getRuntime().exec(new String[]{"su", "-c", shellCommand});
 		} else {
-			// Try using sh (only works if the target is writable)
-			File targetTest = new File(targetPath);
-			if (!targetTest.canWrite()) {
+			File testTarget = new File(targetPath);
+			if (!testTarget.canWrite()) {
 				throw new IOException("No root and cannot write to target path: " + targetPath);
 			}
-			execShell("sh", copyCommand);
+			process = Runtime.getRuntime().exec(new String[]{"sh", "-c", shellCommand});
 		}
-	}
 
-	private static void execShell(String shell, String command) throws IOException {
-		Process process = Runtime.getRuntime().exec(new String[]{shell, "-c", command});
 		try {
 			int result = process.waitFor();
 			if (result != 0) {
-				throw new IOException(shell + " command failed with exit code " + result);
+				throw new IOException("Shell command failed with exit code " + result);
 			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new IOException(shell + " command interrupted", e);
+			throw new IOException("Shell command interrupted", e);
 		}
 	}
 
