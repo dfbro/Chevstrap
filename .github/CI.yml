@@ -6,7 +6,7 @@ on:
       ref:
         description: 'Branch or tag to build'
         required: true
-        default: 'v1.9'
+        default: 'main'
 jobs:
   build:
     runs-on: ubuntu-latest
