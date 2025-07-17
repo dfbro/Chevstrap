@@ -93,23 +93,43 @@ public class FFlagsSettingsManager {
         FileTool.write(fallbackFile, content);
     }
 
-    public static void runCommand(String command) throws IOException {
-        Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+    private static void runCommand(String command) throws IOException {
+        String[] cmd;
+        if (FileToolAlt.isRootAvailable()) {
+            cmd = new String[]{"su", "-c", command};
+        } else {
+            cmd = new String[]{"sh", "-c", command};
+        }
+
+        Process process = Runtime.getRuntime().exec(cmd);
+
+        // Read stdout
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder stdout = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            stdout.append(line).append("\n");
+        }
+
+        // Read stderr
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        StringBuilder stderr = new StringBuilder();
+        while ((line = errorReader.readLine()) != null) {
+            stderr.append(line).append("\n");
+        }
+
         try {
-            int exitCode = process.waitFor();
-
-            String stdout = new String(process.getInputStream().readAllBytes());
-            String stderr = new String(process.getErrorStream().readAllBytes());
-
-            Log.d("Shell", "stdout: " + stdout);
-            Log.d("Shell", "stderr: " + stderr);
-
-            if (exitCode != 0) {
-                throw new IOException("Command failed with exit code " + exitCode + ": " + stderr);
+            int result = process.waitFor();
+            Log.d("FFlags", "Command exit: " + result);
+            if (!stdout.toString().isEmpty()) {
+                Log.d("FFlags", "stdout:\n" + stdout);
+            }
+            if (!stderr.toString().isEmpty()) {
+                Log.e("FFlags", "stderr:\n" + stderr);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Command interrupted", e);
+            Log.e("FFlags", "Command interrupted", e);
         }
     }
 
