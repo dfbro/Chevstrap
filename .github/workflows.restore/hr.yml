@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Branch or tag to build'
+        description: 'Branch or tag target'
         required: true
         default: 'v1.9'
 
