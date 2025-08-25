@@ -1,0 +1,65 @@
+name: Hard Reset to Upstream (Then Restore .github as workflows.restore)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to build'
+        required: true
+        default: 'v1.9'
+
+permissions:
+  contents: write  # Note: cannot push workflow files without `workflows` permission
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout your fork
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          persist-credentials: true
+          clean: true
+
+      - name: Backup .github to temp
+        run: |
+          mkdir -p /tmp/github-backup
+          cp -r .github /tmp/github-backup/
+
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/frossky/chevstrap.git
+
+      - name: Hard reset to upstream
+        run: |
+          TAG="${{ github.event.inputs.ref }}"
+          git fetch upstream "refs/tags/${TAG}:refs/tags/${TAG}"
+          git reset --hard "tags/${TAG}"
+
+      - name: Force push reset to your fork
+        run: |
+          git push origin main --force
+
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Restore .github as workflows.restore and commit
+        run: |
+          mkdir -p .github
+          cp -r /tmp/github-backup/.github/* .github/
+
+          # Rename workflows/ to workflows.restore/
+          if [ -d ".github/workflows" ]; then
+            mv .github/workflows .github/workflows.restore
+          fi
+
+          git add .github
+          git commit -m "restore: restore .github as workflows.restore"
+
+      - name: Push restored .github
+        run: |
+          git push origin main
